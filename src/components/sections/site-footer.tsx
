@@ -1,0 +1,66 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { CodeXml, Mail, Radar } from "lucide-react";
+import { useLanguage } from "@/contexts/language-context";
+
+export function SiteFooter() {
+  const { t } = useLanguage();
+
+  return (
+    <footer className="relative z-[12] border-t border-[color:var(--cyber-border-soft)] bg-gradient-to-t from-black/70 via-black/30 to-transparent px-6 py-12">
+      <div className="mx-auto flex max-w-5xl flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="font-display text-sm tracking-[0.22em] text-[color-mix(in_oklab,var(--cyber-accent-cyan)_88%,transparent)]">
+            NEO TOKYO INQUIRY
+          </p>
+          <p className="mt-3 text-[13px] text-white/60">{t.footerNote}</p>
+        </div>
+
+        <motion.ul
+          className="flex items-center gap-3"
+          aria-label="Social"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-16%" }}
+          variants={{
+            hidden: {},
+            show: {
+              transition: {
+                staggerChildren: 0.08,
+              },
+            },
+          }}
+        >
+          {[
+            { icon: CodeXml, label: "Source", href: "https://github.com" },
+            { icon: Radar, label: "Network", href: "https://nextjs.org" },
+            {
+              icon: Mail,
+              label: "Mail",
+              href: "mailto:hello@example.com",
+            },
+          ].map((item) => (
+            <motion.li
+              key={item.label}
+              variants={{ hidden: { y: 6, opacity: 0 }, show: { y: 0, opacity: 1 } }}
+            >
+              <a
+                href={item.href}
+                className="group inline-flex size-11 items-center justify-center rounded-xl border border-[color:var(--cyber-border-soft)] bg-black/42 text-[color-mix(in_oklab,var(--cyber-accent-cyan)_94%,transparent)] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-xl transition-colors hover:border-[color:color-mix(in_oklab,var(--cyber-accent-cyan)_92%,transparent)] hover:text-[color-mix(in_oklab,var(--cyber-accent-pink)_94%,transparent)]"
+                aria-label={item.label}
+              >
+                <item.icon className="h-[18px] w-[18px] transition-transform group-hover:-translate-y-0.5" />
+              </a>
+            </motion.li>
+          ))}
+        </motion.ul>
+      </div>
+
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-[64px] mx-auto hidden h-[1px] w-[min(70%,680px)] bg-gradient-to-r from-transparent via-[color-mix(in_oklab,var(--cyber-accent-purple)_94%,transparent)] to-transparent blur-[5px]"
+      />
+    </footer>
+  );
+}

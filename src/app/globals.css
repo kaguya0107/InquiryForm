@@ -2,22 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Softer accents (legacy variable names retained for compatibility) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cyber-accent-cyan: #4f8fa8;
+  --cyber-accent-purple: #6b8497;
+  --cyber-accent-pink: #7f96a8;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Light: airy warm-white base, softened text (default) */
+html {
+  color-scheme: light;
+  --background: #fcfcfb;
+  --background-subtle: #f5f7f8;
+  --foreground: #3d5266;
+  --foreground-strong: #2d3f4f;
+  --cyber-card: #ffffff;
+  --cyber-card-border: #e9eef2;
+  --cyber-card-border-solid: #dfe7ee;
+  --cyber-field-border: #dfe8ee;
+  --cyber-border-soft: #edf2f6;
+  --cyber-border-strong: #bcccd8;
+  --cyber-ring: rgba(79, 143, 168, 0.28);
+  --btn-primary: #4f8fa8;
+  --btn-primary-hover: #447f96;
+  --surface-shadow: rgba(45, 78, 98, 0.06);
+}
+
+/* Dark: lifted charcoal (still optional), not OLED-black */
+html.dark {
+  color-scheme: dark;
+  --background: #1c2430;
+  --background-subtle: #242d3c;
+  --foreground: #e6edf2;
+  --foreground-strong: #f2f6f9;
+  --cyber-accent-cyan: #7eb3c9;
+  --cyber-accent-purple: #94a8b8;
+  --cyber-accent-pink: #a8b8c6;
+  --cyber-card: rgba(36, 48, 62, 0.94);
+  --cyber-card-border: rgba(148, 176, 198, 0.2);
+  --cyber-card-border-solid: rgba(148, 176, 198, 0.38);
+  --cyber-field-border: rgba(148, 176, 198, 0.35);
+  --cyber-border-soft: rgba(148, 176, 198, 0.18);
+  --cyber-border-strong: rgba(190, 210, 224, 0.42);
+  --cyber-ring: rgba(126, 179, 201, 0.4);
+  --btn-primary: #6ba3bc;
+  --btn-primary-hover: #5d96b0;
+  --surface-shadow: rgba(0, 0, 0, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
+}
+
+html,
+body {
+  min-height: 100%;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  background-image: radial-gradient(
+    ellipse 110% 70% at 50% -8%,
+    rgba(79, 143, 168, 0.085),
+    transparent 52%
+  );
+}
+
+html.dark body {
+  background-image: radial-gradient(
+    ellipse 100% 55% at 50% -5%,
+    rgba(107, 163, 188, 0.12),
+    transparent 48%
+  );
 }
 
 @layer utilities {

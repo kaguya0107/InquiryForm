@@ -1,0 +1,201 @@
+"use client";
+
+import { Languages, Moon, Sun, Volume2, VolumeX } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useLanguage } from "@/contexts/language-context";
+import { cn } from "@/lib/utils/cn";
+
+export function FloatingControls() {
+  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { t, locale, toggleLocale } = useLanguage();
+
+  const [mounted, setMounted] = useState(false);
+  const [ambientPlaying, setAmbientPlaying] = useState(false);
+
+  useEffect(() => {
+    queueMicrotask(() => setMounted(true));
+  }, []);
+
+  const ambientUrl =
+    typeof process.env.NEXT_PUBLIC_AMBIENT_AUDIO_URL === "string"
+      ? process.env.NEXT_PUBLIC_AMBIENT_AUDIO_URL.trim()
+      : "";
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  function toggleAmbient() {
+    if (!ambientUrl) {
+      toast.error(t.toastMusicNoUrl);
+      return;
+    }
+
+    const node = audioRef.current;
+    if (!node) return;
+
+    void (async () => {
+      try {
+        node.volume = 0.3;
+        if (node.paused) {
+          await node.play();
+          setAmbientPlaying(true);
+        } else {
+          node.pause();
+          setAmbientPlaying(false);
+        }
+      } catch {
+        toast.error(t.toastError);
+      }
+    })();
+  }
+
+  const palette = mounted ? (resolvedTheme ?? theme) === "light" ? "light" : "dark" : "dark";
+
+  const flipTheme = () => {
+    const current = palette === "light" ? "light" : "dark";
+    setTheme(current === "dark" ? "light" : "dark");
+  };
+
+  const themeIcon =
+    palette === "dark" ? (
+      <Sun aria-hidden className="h-[18px] w-[18px]" />
+    ) : (
+      <Moon aria-hidden className="h-[18px] w-[18px]" />
+    );
+
+  const musicIcon =
+    ambientUrl && ambientPlaying ? (
+      <Volume2 aria-hidden className="h-[18px] w-[18px]" />
+    ) : (
+      <VolumeX aria-hidden className="h-[18px] w-[18px]" />
+    );
+
+  const ja = locale === "ja";
+
+  const themeTitle =
+    palette === "dark"
+      ? ja
+        ? "ライトモード"
+        : "Light mode"
+      : ja
+        ? "ダークモード"
+        : "Dark mode";
+
+  const languageTitle = ja ? "English" : "日本語";
+
+  const musicTitle =
+    ambientUrl && ambientPlaying
+      ? ja
+        ? "環境音オン"
+        : "Ambient on"
+      : ja
+        ? "環境音オフ"
+        : "Ambient off";
+
+  return (
+    <>
+      {/* mobile */}
+      <div className="pointer-events-none fixed bottom-[calc(env(safe-area-inset-bottom)+112px)] left-6 right-6 z-[560] grid grid-cols-3 gap-[11px] sm:hidden">
+        <ControlButtonMobile
+          ariaLabel={mounted ? `${t.ariaTheme} (${palette})` : t.ariaTheme}
+          onClick={flipTheme}
+          title={themeTitle}
+        >
+          {themeIcon}
+        </ControlButtonMobile>
+        <ControlButtonMobile ariaLabel={t.ariaLang} onClick={() => toggleLocale()} title={languageTitle}>
+          <Languages aria-hidden className="h-[18px] w-[18px]" />
+        </ControlButtonMobile>
+        <ControlButtonMobile
+          ariaLabel={t.ariaMusic}
+          onClick={() => toggleAmbient()}
+          title={musicTitle}
+          subdued={!ambientUrl}
+        >
+          {musicIcon}
+        </ControlButtonMobile>
+      </div>
+
+      {/* desktop */}
+      <div className="pointer-events-none fixed right-9 top-[calc(env(safe-area-inset-top)+22px)] z-[560] hidden sm:block xl:right-[max(72px,(100vw-1240px)/2)]">
+        <div
+          className="pointer-events-auto flex gap-3 rounded-[20px] border border-[color:var(--cyber-card-border-solid)] bg-[color:rgba(8,42,174,0.72)] px-3 py-3 shadow-[0_0_64px_-22px_color-mix(in_oklab,var(--cyber-accent-cyan)_94%,transparent)] backdrop-blur-xl md:flex-col-reverse"
+          aria-label="Site controls"
+        >
+          <ControlButtonDesk ariaLabel={mounted ? `${t.ariaTheme} (${palette})` : t.ariaTheme} onClick={flipTheme} title={themeTitle}>
+            {themeIcon}
+          </ControlButtonDesk>
+          <ControlButtonDesk ariaLabel={t.ariaLang} onClick={() => toggleLocale()} title={languageTitle}>
+            <Languages aria-hidden className="h-[18px] w-[18px]" />
+          </ControlButtonDesk>
+          <ControlButtonDesk
+            ariaLabel={t.ariaMusic}
+            onClick={() => toggleAmbient()}
+            title={musicTitle}
+            subdued={!ambientUrl}
+          >
+            {musicIcon}
+          </ControlButtonDesk>
+        </div>
+      </div>
+
+      {ambientUrl ? (
+        <audio
+          ref={audioRef}
+          preload="none"
+          loop
+          playsInline
+          className="hidden"
+          onPlay={() => setAmbientPlaying(true)}
+          onPause={() => setAmbientPlaying(false)}
+          onEnded={() => setAmbientPlaying(false)}
+        >
+          <source src={ambientUrl} />
+        </audio>
+      ) : null}
+    </>
+  );
+}
+
+function ControlButtonMobile(props: ControlProps) {
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      aria-label={props.ariaLabel}
+      title={props.title}
+      className={cn(
+        "pointer-events-auto inline-flex h-[48px] items-center justify-center rounded-2xl border border-[rgba(239,239,246,0.12)] bg-black/96 text-emerald-200/96 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-[color-mix(in_oklab,var(--cyber-accent-cyan)_84%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/94",
+        props.subdued ? "opacity-75" : null,
+      )}
+    >
+      {props.children}
+    </button>
+  );
+}
+
+function ControlButtonDesk(props: ControlProps) {
+  return (
+    <button
+      type="button"
+      onClick={props.onClick}
+      aria-label={props.ariaLabel}
+      title={props.title}
+      className={cn(
+        "inline-grid size-[46px] place-items-center rounded-2xl border border-[rgba(239,239,246,0.09)] bg-black/94 text-emerald-200/96 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:border-[color-mix(in_oklab,var(--cyber-accent-cyan)_84%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/94",
+        props.subdued ? "opacity-[0.76]" : null,
+      )}
+    >
+      {props.children}
+    </button>
+  );
+}
+
+type ControlProps = {
+  children: React.ReactNode;
+  onClick: () => void;
+  ariaLabel: string;
+  title: string;
+  subdued?: boolean;
+};
