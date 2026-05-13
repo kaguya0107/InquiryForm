@@ -33,6 +33,8 @@ Payload shape sent on submit:
 }
 ```
 
+Validation (client-side): trimmed fields; **email** lowercased and RFC-style `email()` check; **phone** normalizes full-width digits and common punctuation to half-width before checking **10–15 digits** (non-digits stripped for the count). **Required:** company, contact name, email, phone, message (min 10 chars).
+
 ## Scripts
 
 | Command | Purpose |

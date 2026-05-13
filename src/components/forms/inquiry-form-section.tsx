@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   UserRoundPen,
 } from "lucide-react";
+import type { FocusEvent } from "react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { FieldPath } from "react-hook-form";
@@ -17,7 +18,7 @@ import type { z } from "zod";
 import { SuccessModal } from "@/components/modals/success-modal";
 import { useLanguage } from "@/contexts/language-context";
 import type { InquiryPayload } from "@/lib/types/inquiry";
-import { createInquirySchema } from "@/lib/validations/inquiry";
+import { createInquirySchema, normalizePhoneNumberInput } from "@/lib/validations/inquiry";
 import { cn } from "@/lib/utils/cn";
 
 type InquiryFormSectionProps = {
@@ -98,6 +99,9 @@ function InquiryFormSection({ className }: InquiryFormSectionProps) {
     }
   }
 
+  const registerEmail = form.register("email");
+  const registerPhone = form.register("phone_number");
+
   return (
     <section id="contact" className={cn("relative z-[22] px-6 pb-28 sm:pb-32", className)}>
       <div className="mx-auto mt-[-20px] max-w-5xl sm:mt-[-28px]">
@@ -151,27 +155,47 @@ function InquiryFormSection({ className }: InquiryFormSectionProps) {
 
               <GlassField icon={Mail} label={t.labels.email} fieldId="email">
                 <input
-                  {...form.register("email")}
+                  {...registerEmail}
                   id="email"
                   type="email"
                   autoComplete="email"
                   placeholder={t.placeholders.email}
+                  inputMode="email"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  maxLength={254}
                   className={inputBase}
                   aria-invalid={Boolean(form.formState.errors.email)}
+                  onBlur={(e: FocusEvent<HTMLInputElement>) => {
+                    registerEmail.onBlur(e);
+                    const next = e.target.value.trim().toLowerCase();
+                    if (next !== e.target.value) {
+                      form.setValue("email", next, { shouldValidate: true });
+                    }
+                  }}
                 />
                 <InlineError message={form.formState.errors.email?.message} />
               </GlassField>
 
               <GlassField icon={Phone} label={t.labels.phone} fieldId="phone_number">
                 <input
-                  {...form.register("phone_number")}
+                  {...registerPhone}
                   id="phone_number"
                   type="tel"
                   autoComplete="tel"
                   inputMode="tel"
                   placeholder={t.placeholders.phone}
+                  maxLength={40}
                   className={inputBase}
                   aria-invalid={Boolean(form.formState.errors.phone_number)}
+                  onBlur={(e: FocusEvent<HTMLInputElement>) => {
+                    registerPhone.onBlur(e);
+                    const next = normalizePhoneNumberInput(e.target.value);
+                    if (next !== e.target.value) {
+                      form.setValue("phone_number", next, { shouldValidate: true });
+                    }
+                  }}
                 />
                 <InlineError message={form.formState.errors.phone_number?.message} />
               </GlassField>
@@ -217,8 +241,7 @@ function InquiryFormSection({ className }: InquiryFormSectionProps) {
         <SuccessModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
-          title={t.modalTitle}
-          body={t.modalBody}
+          message={t.modalSuccess}
           closeLabel={t.modalClose}
         />
       </div>
